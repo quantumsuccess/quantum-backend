@@ -3,11 +3,8 @@ import bcrypt from 'bcrypt';
 
 // Define a TypeScript interface for the user document
 export interface IUser extends Document {
-  firstname: string;
-  lastname: string;
-  fathername: string;
-  mothername: string;
-  emailId: string;
+  fullname: string;
+  email: string;
   phoneNumber: string;
   password: string;
   createdAt?: Date;
@@ -17,27 +14,12 @@ export interface IUser extends Document {
 // Define schema
 const registrationSchema = new Schema<IUser>(
   {
-    firstname: {
+    fullname: {
       type: String,
       required: true,
       trim: true,
     },
-    lastname: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    fathername: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    mothername: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    emailId: {
+    email: {
       type: String,
       required: true,
       unique: true,
@@ -57,7 +39,7 @@ const registrationSchema = new Schema<IUser>(
     },
   },
   {
-    timestamps: true, // adds createdAt and updatedAt
+    timestamps: true,
   }
 );
 

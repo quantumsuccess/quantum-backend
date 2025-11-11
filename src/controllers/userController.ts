@@ -7,11 +7,8 @@ import generateToken,{matchPassword} from "../utils/helper.js";
 
 // Define the expected request body type
 interface RegisterUserBody {
-  firstname: string;
-  lastname: string;
-  fathername: string;
-  mothername: string;
-  emailId: string;
+  fullname: string;
+  email: string;
   phoneNumber: string;
   password: string;
 }
@@ -28,22 +25,16 @@ export const registerUser = async (
 ): Promise<void> => {
   try {
     const {
-      firstname,
-      lastname,
-      fathername,
-      mothername,
-      emailId,
+      fullname,
+      email,
       phoneNumber,
       password,
     } = req.body;
 
     // Validate required fields
     if (
-      !firstname ||
-      !lastname ||
-      !fathername ||
-      !mothername ||
-      !emailId ||
+      !fullname ||
+      !email ||
       !phoneNumber ||
       !password
     ) {
@@ -52,7 +43,7 @@ export const registerUser = async (
     }
 
     // Check if user already exists
-    const userExists = await Users.findOne({ emailId });
+    const userExists = await Users.findOne({ email });
     if (userExists) {
       res.status(400).json({ message: "User already exists" });
       return;
@@ -64,11 +55,8 @@ export const registerUser = async (
 
     // Create user
     const user = await Users.create({
-      firstname,
-      lastname,
-      fathername,
-      mothername,
-      emailId,
+      fullname,
+      email,
       phoneNumber,
       password: hashedPassword,
     });
@@ -76,11 +64,9 @@ export const registerUser = async (
     if (user) {
       res.status(201).json({
         _id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        emailId: user.emailId,
+        fullname: user.fullname,
+        email: user.email,
         phoneNumber: user.phoneNumber,
-        // token: generateToken(user._id),
       });
     } else {
       res.status(400).json({ message: "Failed to create the user" });
@@ -98,7 +84,7 @@ export const authUser = async (
   const { email, password } = req.body;
 
   // Find user by email
-  const user = await Users.findOne({ emailId:email });
+  const user = await Users.findOne({ email:email });
   
   console.log("user",user)
   // Check password
@@ -110,8 +96,8 @@ export const authUser = async (
   if (user && (passwordMatched)) {
     res.json({
       _id: user._id,
-      name: user?.firstname,
-      email: user?.emailId,
+      name: user?.fullname,
+      email: user?.email,
       token: generateToken(user?._id.toString()),
     });
   } else {
