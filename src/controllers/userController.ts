@@ -99,9 +99,13 @@ export const authUser = async (
 
   // Find user by email
   const user = await Users.findOne({ emailId:email });
+  
   console.log("user",user)
   // Check password
-  let passwordMatched = await matchPassword(password,user.password)
+  let passwordMatched
+  if(user){
+    passwordMatched = await matchPassword(password,user.password)
+  }
 
   if (user && (passwordMatched)) {
     res.json({

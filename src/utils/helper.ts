@@ -2,8 +2,12 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 const generateToken = (id:any) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+  }
   console.log('process.env.JWT_SECRET', process.env.JWT_SECRET)
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, secret, { expiresIn: '30d' });
 };
 
 const matchPassword = async (enteredPassword: string, hashedPassword: string) => {
@@ -11,5 +15,7 @@ const matchPassword = async (enteredPassword: string, hashedPassword: string) =>
   return await bcrypt.compare(enteredPassword, hashedPassword);
 };
 
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
 export default generateToken;
-export { matchPassword };
+export { matchPassword,generateOTP };

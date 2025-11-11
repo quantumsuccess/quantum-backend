@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes.js';
+import otpRoutes from './routes/otpRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +13,7 @@ const PORT: number | string = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use("/api/user", userRoutes);
+app.use("/api/otp", otpRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL as string)
