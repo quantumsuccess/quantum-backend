@@ -1,4 +1,5 @@
-import { Router, Request, Response } from "express";
+import { Request, Response } from "express";
+
 interface BlueprintItem {
   id: number;
   name: string;
@@ -25,31 +26,50 @@ function randomInRange(min: number, max: number): number {
   return parseFloat((Math.random() * (max - min) + min).toFixed(3));
 }
 
-// Dates where mother value is higher
+// Helper to check dominance
 function isMotherHigher(date: number): boolean {
   const motherDates = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
   return motherDates.includes(date);
 }
 
 export const foundationalBluePrintReport = (req: Request, res: Response) => {
-  // allow optional date query
+  // optional query for custom date
   const date = req.query.date ? Number(req.query.date) : new Date().getDate();
-  const motherHigher = isMotherHigher(date);
+  const motherDominant = isMotherHigher(date);
 
-  // Generate randomized data for each call
+  // Generate values ensuring dominance rules
   const generatedData = baseBlueprint.map((item) => {
-    const mother = randomInRange(item.min, item.max);
-    const father = randomInRange(item.min, item.max);
+    let mother: number;
+    let father: number;
+
+    // small delta to ensure one side is higher, stays within range
+    const range = item.max - item.min;
+    const delta = range * 0.05; // 5% gap for clear difference
+
+    if (motherDominant) {
+      // Mother higher
+      mother = randomInRange(item.min + delta, item.max);
+      // father slightly lower but within min/max
+      const fatherMax = Math.min(mother - 0.01, item.max);
+      father = randomInRange(item.min, Math.max(item.min, fatherMax));
+    } else {
+      // Father higher
+      father = randomInRange(item.min + delta, item.max);
+      // mother slightly lower but within min/max
+      const motherMax = Math.min(father - 0.01, item.max);
+      mother = randomInRange(item.min, Math.max(item.min, motherMax));
+    }
+
     const total = parseFloat((mother + father).toFixed(3));
     return { ...item, mother, father, total };
   });
 
-  // Compute total values
+  // Compute totals
   const totalMother = generatedData.reduce((sum, i) => sum + i.mother, 0);
   const totalFather = generatedData.reduce((sum, i) => sum + i.father, 0);
   const combined = parseFloat((totalMother + totalFather).toFixed(3));
 
-  // Normalize to 100 (optional step to make total = 100)
+  // Normalize to make total = 100
   const scaleFactor = 100 / combined;
   const normalizedData = generatedData.map((item) => ({
     ...item,
@@ -67,19 +87,13 @@ export const foundationalBluePrintReport = (req: Request, res: Response) => {
 
   const responseData = normalizedData.map((item) => ({
     ...item,
-    higher: motherHigher
-      ? item.mother > item.father
-        ? "Mother"
-        : "Father"
-      : item.father > item.mother
-      ? "Father"
-      : "Mother",
-    higherValue: motherHigher ? item.mother : item.father,
+    higher: motherDominant ? "Mother" : "Father",
+    higherValue: motherDominant ? item.mother : item.father,
   }));
 
   res.json({
     date,
-    dominance: motherHigher ? "Mother" : "Father",
+    dominance: motherDominant ? "Mother" : "Father",
     totals: {
       mother: newMotherTotal,
       father: newFatherTotal,
@@ -87,4 +101,4 @@ export const foundationalBluePrintReport = (req: Request, res: Response) => {
     },
     data: responseData,
   });
-}
+};

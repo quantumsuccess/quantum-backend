@@ -9,7 +9,7 @@ import reportRoutes from './routes/reportRoutes.js';
 dotenv.config();
 
 const app: Application = express();
-const PORT: number | string = process.env.PORT || 3000;
+const PORT: number | string = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
